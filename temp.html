@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<!-- Full music player interface -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .player-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 350px;
+            text-align: center;
+        }
+        .album-art {
+            width: 250px;
+            height: 250px;
+            background-color: #ddd;
+            margin: 0 auto 20px auto;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #888;
+        }
+        .song-info {
+            margin-bottom: 20px;
+        }
+        .song-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .artist-name {
+            color: #666;
+            font-size: 14px;
+        }
+        .progress-container {
+            height: 5px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #1db954;
+            border-radius: 5px;
+            width: 0%;
+        }
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .controls button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+        }
+        .play-pause {
+            background-color: #1db954;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .volume-slider {
+            width: 100px;
+        }
+        .file-input {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="album-art">No album art</div>
+        <div class="song-info">
+            <div class="song-title">No song selected</div>
+            <div class="artist-name">Unknown artist</div>
+        </div>
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="time-info">
+            <span id="current-time">0:00</span>
+            <span id="total-time">0:00</span>
+        </div>
+        <div class="controls">
+            <button id="prev-btn">⏮️</button>
+            <button id="play-pause-btn" class="play-pause">▶️</button>
+            <button id="next-btn">⏭️</button>
+        </div>
+        <div class="volume-container">
+            <span>🔈</span>
+            <input type="range" min="0" max="100" value="100" class="volume-slider" id="volume-slider">
+            <span>🔊</span>
+        </div>
+        <div class="file-input">
+            <input type="file" id="file-input" accept="audio/*" multiple>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const progressContainer = document.getElementById('progress-container');
+        const currentTimeSpan = document.getElementById('current-time');
+        const totalTimeSpan = document.getElementById('total-time');
+        const volumeSlider = document.getElementById('volume-slider');
+        const songTitle = document.querySelector('.song-title');
+        const artistName = document.querySelector('.artist-name');
+        const albumArt = document.querySelector('.album-art');
+
+        let audioPlayer = new Audio();
+        let playlist = [];
+        let currentTrack = 0;
+        let isPlaying = false;
+
+        fileInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            playlist = files;
+            if (playlist.length > 0) {
+                currentTrack = 0;
+                loadTrack(currentTrack);
+            }
+        });
+
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        prevBtn.addEventListener('click', playPreviousTrack);
+        nextBtn.addEventListener('click', playNextTrack);
+        
+        audioPlayer.addEventListener('timeupdate', updateProgress);
+        audioPlayer.addEventListener('ended', playNextTrack);
+        
+        progressContainer.addEventListener('click', setProgress);
+        volumeSlider.addEventListener('input', setVolume);
+
+        function loadTrack(index) {
+            if (playlist.length === 0) return;
+            
+            const file = playlist[index];
+            const fileURL = URL.createObjectURL(file);
+            audioPlayer.src = fileURL;
+            
+            songTitle.textContent = file.name.replace(/\.[^/.]+$/, "");
+            artistName.textContent = "Unknown artist";
+            
+            if (isPlaying) {
+                audioPlayer.play();
+                playPauseBtn.textContent = "⏸️";
+            }
+        }
+
+        function togglePlayPause() {
+            if (playlist.length === 0) return;
+            
+            if (isPlaying) {
+                audioPlayer.pause();
+                playPauseBtn.textContent = "▶️";
+            } else {
+                audioPlayer.play();
+                playPauseBtn.textContent = "⏸️";
+            }
+            
+            isPlaying = !isPlaying;
+        }
+
+        function playPreviousTrack() {
+            if (playlist.length === 0) return;
+            
+            currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
+            loadTrack(currentTrack);
+            
+            if (isPlaying) {
+                audioPlayer.play();
+            }
+        }
+
+        function playNextTrack() {
+            if (playlist.length === 0) return;
+            
+            currentTrack = (currentTrack + 1) % playlist.length;
+            loadTrack(currentTrack);
+            
+            if (isPlaying) {
+                audioPlayer.play();
+            }
+        }
+
+        function updateProgress() {
+            const duration = audioPlayer.duration;
+            const currentTime = audioPlayer.currentTime;
+            
+            if (duration) {
+                // Update progress bar
+                const progressPercent = (currentTime / duration) * 100;
+                progressBar.style.width = `${progressPercent}%`;
+                
+                // Update time displays
+                currentTimeSpan.textContent = formatTime(currentTime);
+                totalTimeSpan.textContent = formatTime(duration);
+            }
+        }
+
+        function setProgress(e) {
+            const width = this.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audioPlayer.duration;
+            
+            audioPlayer.currentTime = (clickX / width) * duration;
+        }
+
+        function setVolume() {
+            audioPlayer.volume = volumeSlider.value / 100;
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+    </script>
+</body>
+</html> 

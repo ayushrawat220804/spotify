@@ -1,0 +1,3 @@
+[submodule "spotify_downloads/SPOTIFY_PLAYLIST_DOWNLOADER_PYTHON"]
+	path = spotify_downloads/SPOTIFY_PLAYLIST_DOWNLOADER_PYTHON
+	url = https://github.com/ayushrawat220804/music-player.git

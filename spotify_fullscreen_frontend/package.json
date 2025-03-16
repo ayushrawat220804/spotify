@@ -1,0 +1,33 @@
+{
+  "name": "spotify-fullscreen",
+  "version": "1.5.0",
+  "description": "A fullscreen UI for Spotify with enhanced visuals",
+  "main": "index.js",
+  "scripts": {
+    "start": "parcel src/index.html",
+    "build": "parcel build src/index.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "spotify",
+    "fullscreen",
+    "music",
+    "player",
+    "ui"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "dotenv": "^16.4.7",
+    "googleapis": "^146.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "styled-components": "^6.1.1",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.5"
+  }
+}
